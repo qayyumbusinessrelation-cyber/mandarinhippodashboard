@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandarin Hippo — CEO Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p-deep:#3D2E6B;--p-mid:#7B6FA0;--p-soft:#A99BC9;--p-pale:#C8BEDF;
+  --p-blush:#EDE8F5;--p-cream:#FAF8FC;
+  --mint:#6BBFA0;--peach:#F0A07A;--rose:#E07B8A;--gold:#C9A84C;--sky:#7AB3D4;
+  --t-dark:#2D2440;--t-mid:#6B5F8A;--t-light:#A99BC9;
+  --r-sm:10px;--r-md:14px;--r-lg:20px;
+  --sh-sm:0 1px 4px rgba(61,46,107,0.08);--sh-md:0 4px 16px rgba(61,46,107,0.10)
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#F3EFF9;color:var(--t-dark);min-height:100vh;padding:20px}
+
+/* NAV */
+.topnav{background:var(--p-deep);border-radius:var(--r-lg);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;box-shadow:var(--sh-md)}
+.topnav-left{display:flex;align-items:center;gap:14px}
+.logo-img{height:42px;width:auto;display:block;border-radius:6px}
+.logo-divider{width:1px;height:32px;background:rgba(255,255,255,0.15)}
+.logo-tagline{color:var(--p-pale);font-size:12px}
+.topnav-right{display:flex;align-items:center;gap:10px}
+.badge{background:rgba(255,255,255,0.12);color:#EDE8F5;font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px}
+.badge-live{background:rgba(107,191,160,0.2);color:#9FE1CB}
+
+/* SETUP */
+.setup-banner{background:var(--p-blush);border:1px dashed var(--p-pale);border-radius:var(--r-md);padding:20px 24px;margin-bottom:20px;display:flex;align-items:flex-start;gap:14px}
+.setup-title{font-size:14px;font-weight:700;color:var(--p-deep);margin-bottom:4px}
+.setup-desc{font-size:12px;color:var(--t-mid);line-height:1.6}
+.setup-desc code{background:#fff;padding:2px 6px;border-radius:4px;font-size:11px;color:var(--p-deep)}
+.setup-input{width:100%;margin-top:10px;padding:10px 14px;border:1px solid var(--p-pale);border-radius:var(--r-sm);font-size:12px;font-family:monospace;color:var(--t-dark);background:#fff;outline:none}
+.setup-input:focus{border-color:var(--p-mid)}
+.setup-btn{margin-top:10px;background:var(--p-deep);color:#fff;border:none;border-radius:var(--r-sm);padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.setup-btn:hover{opacity:.85}
+.setup-btn-demo{background:var(--p-mid);margin-left:8px}
+
+/* SECTION LABEL */
+.section-label{font-size:11px;font-weight:600;color:var(--t-light);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.kpi-card{background:#fff;border-radius:var(--r-md);padding:16px 18px;border-left:4px solid var(--accent,var(--p-mid));box-shadow:var(--sh-sm);transition:transform .15s,box-shadow .15s}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+.kpi-label{font-size:11px;color:var(--t-light);font-weight:500;margin-bottom:6px}
+.kpi-value{font-size:24px;font-weight:700;line-height:1;margin-bottom:5px}
+.kpi-trend{font-size:11px;color:var(--t-light)}
+.up{color:#2D9B6F;font-weight:600}.down{color:#C0392B;font-weight:600}
+
+/* CARDS */
+.main-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:#fff;border-radius:var(--r-md);padding:20px;box-shadow:var(--sh-sm)}
+.card-title{font-size:11px;font-weight:600;color:var(--t-light);text-transform:uppercase;letter-spacing:.7px;margin-bottom:16px}
+
+/* CAPACITY */
+.cap-row{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.cap-row:last-child{margin-bottom:0}
+.cap-name{font-size:12px;color:var(--t-dark);flex:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-weight:500}
+.cap-bar-wrap{flex:1.5;height:8px;background:#F0EDF7;border-radius:10px;overflow:hidden}
+.cap-bar{height:100%;border-radius:10px;transition:width .6s ease}
+.cap-pct{font-size:11px;font-weight:700;min-width:34px;text-align:right}
+
+/* BOTTOM */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* LEADS */
+.lead-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0EDF7}
+.lead-row:last-child{border-bottom:none}
+.lead-name{font-size:12px;font-weight:600;color:var(--t-dark)}
+.lead-sub{font-size:11px;color:var(--t-light);margin-top:1px}
+.pill{display:inline-block;font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.pill-new{background:#EDE8F5;color:#4A3F6B}
+.pill-booked{background:#FFF8DC;color:#7A5800}
+.pill-trial{background:#E6F1FB;color:#185FA5}
+.pill-joined{background:#E8F7F1;color:#0F6E56}
+.pill-fu{background:#FDEAEA;color:#A32D2D}
+
+/* GROWTH */
+.growth-row{display:flex;align-items:center;justify-content:space-between;padding:7px 8px;border-radius:8px;font-size:12px;margin-bottom:3px}
+.growth-row.current{background:var(--p-blush)}
+.growth-mon{font-weight:600;color:var(--t-mid);min-width:30px}
+.growth-row.current .growth-mon{color:var(--p-deep)}
+.growth-stu{color:var(--t-mid)}
+.growth-profit{font-weight:700;color:var(--mint)}
+.growth-row.current .growth-profit{color:var(--p-deep)}
+
+/* PL */
+.pl-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F0EDF7;font-size:12px}
+.pl-row:last-child{border-bottom:none}
+.pl-label{color:var(--t-mid);font-weight:500}
+.pl-val{font-weight:700}
+.pl-total{background:var(--p-blush);border-radius:10px;padding:12px 14px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+.pl-total-label{font-size:12px;font-weight:600;color:var(--p-mid)}
+.pl-total-val{font-size:20px;font-weight:700;color:var(--p-deep)}
+
+/* MULTI-SHEET SETUP */
+.tab-setup{margin-top:16px;border-top:1px solid var(--p-pale);padding-top:16px}
+.tab-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.tab-label{font-size:12px;font-weight:600;color:var(--t-dark);min-width:160px}
+.tab-input{flex:1;padding:8px 12px;border:1px solid var(--p-pale);border-radius:var(--r-sm);font-size:11px;font-family:monospace;color:var(--t-dark);background:#fff;outline:none}
+.tab-input:focus{border-color:var(--p-mid)}
+.tab-status{font-size:11px;min-width:60px;text-align:right}
+.tab-ok{color:#2D9B6F;font-weight:600}
+.tab-empty{color:var(--t-light)}
+
+/* MISC */
+.spinner{width:32px;height:32px;border:3px solid var(--p-blush);border-top-color:var(--p-mid);border-radius:50%;animation:spin .8s linear infinite;margin:20px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{font-size:12px;color:var(--t-light);text-align:center;padding:24px 10px;line-height:1.6}
+.settings-btn{position:fixed;bottom:20px;right:20px;background:var(--p-deep);color:#fff;border:none;border-radius:50px;padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:var(--sh-md);z-index:100}
+.last-updated{text-align:center;font-size:11px;color:var(--t-light);margin-top:20px;padding-bottom:20px}
+
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.main-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}}
+@media(max-width:480px){body{padding:12px}.kpi-grid{gap:8px}.logo-img{height:34px}.kpi-value{font-size:20px}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-left">
+    <img src="data:image/png;base64,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" alt="Mandarin Hippo" class="logo-img">
+    <div class="logo-divider"></div>
+    <div class="logo-tagline">CEO Dashboard</div>
+  </div>
+  <div class="topnav-right">
+    <span class="badge badge-live" id="live-badge">Live</span>
+    <span class="badge" id="month-badge">—</span>
+  </div>
+</nav>
+
+<!-- SETUP PANEL -->
+<div class="setup-banner" id="setup-banner">
+  <div style="font-size:22px;flex-shrink:0">🔗</div>
+  <div style="flex:1">
+    <div class="setup-title">Connect your Google Sheets</div>
+    <div class="setup-desc">
+      For each tab below, go to <code>File → Share → Publish to web</code>, select that tab, choose <code>CSV</code>, click Publish and paste the link.<br>
+      Only Growth Tracker is required. Others unlock more live data.
+    </div>
+    <div class="tab-setup">
+      <div class="tab-row">
+        <span class="tab-label">📈 Growth Tracker <span style="color:var(--rose);font-size:10px;">required</span></span>
+        <input class="tab-input" id="url-growth" placeholder="Paste CSV link for Growth Tracker tab…">
+        <span class="tab-status tab-empty" id="status-growth">—</span>
+      </div>
+      <div class="tab-row">
+        <span class="tab-label">👥 Students</span>
+        <input class="tab-input" id="url-students" placeholder="Paste CSV link for Students tab…">
+        <span class="tab-status tab-empty" id="status-students">—</span>
+      </div>
+      <div class="tab-row">
+        <span class="tab-label">🏫 Classes</span>
+        <input class="tab-input" id="url-classes" placeholder="Paste CSV link for Classes tab…">
+        <span class="tab-status tab-empty" id="status-classes">—</span>
+      </div>
+      <div class="tab-row">
+        <span class="tab-label">🎯 Leads CRM</span>
+        <input class="tab-input" id="url-leads" placeholder="Paste CSV link for Leads CRM tab…">
+        <span class="tab-status tab-empty" id="status-leads">—</span>
+      </div>
+      <div class="tab-row">
+        <span class="tab-label">📊 Revenue & Expenses</span>
+        <input class="tab-input" id="url-revenue" placeholder="Paste CSV link for Revenue & Expenses tab…">
+        <span class="tab-status tab-empty" id="status-revenue">—</span>
+      </div>
+    </div>
+    <button class="setup-btn" onclick="saveAllUrls()">Connect Sheets</button>
+    <button class="setup-btn setup-btn-demo" onclick="loadDemo()">Preview with demo data</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none">
+
+  <div class="section-label">Key metrics — this month</div>
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--accent:#4A3F6B">
+      <div class="kpi-label">Active students</div>
+      <div class="kpi-value" id="kpi-students" style="color:#4A3F6B">—</div>
+      <div class="kpi-trend" id="kpi-students-trend"></div>
+    </div>
+    <div class="kpi-card" style="--accent:#2D9B6F">
+      <div class="kpi-label">Monthly revenue</div>
+      <div class="kpi-value" id="kpi-revenue" style="color:#0F6E56">—</div>
+      <div class="kpi-trend" id="kpi-revenue-trend"></div>
+    </div>
+    <div class="kpi-card" style="--accent:#7B6FA0">
+      <div class="kpi-label">Net profit</div>
+      <div class="kpi-value" id="kpi-profit" style="color:#4A3F6B">—</div>
+      <div class="kpi-trend" id="kpi-profit-trend"></div>
+    </div>
+    <div class="kpi-card" style="--accent:#C9A84C">
+      <div class="kpi-label">Ads spend</div>
+      <div class="kpi-value" id="kpi-ads" style="color:#7A5800">—</div>
+      <div class="kpi-trend" id="kpi-ads-trend"></div>
+    </div>
+  </div>
+  <div class="kpi-grid" style="margin-bottom:20px">
+    <div class="kpi-card" style="--accent:#7AB3D4">
+      <div class="kpi-label">New leads</div>
+      <div class="kpi-value" id="kpi-leads" style="color:#185FA5">—</div>
+      <div class="kpi-trend" id="kpi-leads-trend"></div>
+    </div>
+    <div class="kpi-card" style="--accent:#C9A84C">
+      <div class="kpi-label">Trial conversion</div>
+      <div class="kpi-value" id="kpi-conversion" style="color:#854F0B">—</div>
+      <div class="kpi-trend" id="kpi-conversion-trend"></div>
+    </div>
+    <div class="kpi-card" style="--accent:#A99BC9">
+      <div class="kpi-label">Retention rate</div>
+      <div class="kpi-value" id="kpi-retention" style="color:#4A3F6B">—</div>
+      <div class="kpi-trend" id="kpi-retention-trend"></div>
+    </div>
+    <div class="kpi-card" style="--accent:#2D9B6F">
+      <div class="kpi-label">Avg class fill</div>
+      <div class="kpi-value" id="kpi-fill" style="color:#0F6E56">—</div>
+      <div class="kpi-trend" id="kpi-fill-trend"></div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card">
+      <div class="card-title">Revenue vs expenses — monthly trend</div>
+      <div style="position:relative;width:100%;height:220px">
+        <canvas id="revenueChart" role="img" aria-label="Bar chart of monthly revenue and expenses with profit line"></canvas>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--t-light)">
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#C8BEDF;display:inline-block"></span>Revenue</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#F5C4B3;display:inline-block"></span>Expenses</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:2px;height:10px;background:#6BBFA0;display:inline-block"></span>Profit</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Class capacity</div>
+      <div id="capacity-list"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="card">
+      <div class="card-title">Leads pipeline</div>
+      <div id="leads-list"><div class="spinner"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Monthly growth</div>
+      <div id="growth-table"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">P&L summary</div>
+      <div id="pl-summary"></div>
+    </div>
+  </div>
+</div>
+
+<div class="last-updated" id="last-updated"></div>
+<button class="settings-btn" id="settings-btn" onclick="showSettings()" style="display:none">⚙ Settings</button>
+
+<script>
+// ─── STORAGE KEYS ───────────────────────────────────
+const KEYS = {
+  growth:   'mh_url_growth',
+  students: 'mh_url_students',
+  classes:  'mh_url_classes',
+  leads:    'mh_url_leads',
+  revenue:  'mh_url_revenue',
+};
+const REFRESH_MS = 5 * 60 * 1000;
+let revenueChart = null;
+
+// Month badge
+const now = new Date();
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+document.getElementById('month-badge').textContent = MONTHS[now.getMonth()] + ' ' + now.getFullYear();
+
+// ─── SETUP ──────────────────────────────────────────
+function saveAllUrls() {
+  const urls = {
+    growth:   document.getElementById('url-growth').value.trim(),
+    students: document.getElementById('url-students').value.trim(),
+    classes:  document.getElementById('url-classes').value.trim(),
+    leads:    document.getElementById('url-leads').value.trim(),
+    revenue:  document.getElementById('url-revenue').value.trim(),
+  };
+  if (!urls.growth) { alert('Growth Tracker URL is required — it powers the main KPIs and chart.'); return; }
+  Object.entries(urls).forEach(([k, v]) => { if (v) localStorage.setItem(KEYS[k], v); });
+  document.getElementById('setup-banner').style.display = 'none';
+  document.getElementById('settings-btn').style.display = 'block';
+  fetchAllAndRender(urls);
+}
+
+function showSettings() {
+  Object.entries(KEYS).forEach(([k, key]) => {
+    const saved = localStorage.getItem(key) || '';
+    document.getElementById('url-'+k).value = saved;
+    setTabStatus(k, saved ? 'connected' : 'empty');
+  });
+  document.getElementById('setup-banner').style.display = 'flex';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setTabStatus(tab, state) {
+  const el = document.getElementById('status-'+tab);
+  if (!el) return;
+  if (state === 'connected') { el.textContent = '✓'; el.className = 'tab-status tab-ok'; }
+  else if (state === 'error'){ el.textContent = '✗'; el.className = 'tab-status down'; }
+  else { el.textContent = '—'; el.className = 'tab-status tab-empty'; }
+}
+
+function loadDemo() {
+  document.getElementById('setup-banner').style.display = 'none';
+  document.getElementById('settings-btn').style.display = 'block';
+  renderDashboard(getDemoData());
+  document.getElementById('last-updated').textContent = 'Showing demo data — connect your Google Sheets to see live numbers';
+  setBadge('demo');
+}
+
+// On load
+// Hardcoded sheet URLs — no setup needed
+const HARDCODED_URLS = {
+  growth:   'https://docs.google.com/spreadsheets/d/e/2PACX-1vQERoyCDImcCdFj1UIxR8nnnL4Iv60k7thVphoPPfu69DZ1tB3G2fP4IB0B705NBAk6pPLXq88ek05I/pub?gid=13821840&single=true&output=csv',
+  students: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQERoyCDImcCdFj1UIxR8nnnL4Iv60k7thVphoPPfu69DZ1tB3G2fP4IB0B705NBAk6pPLXq88ek05I/pub?gid=255701373&single=true&output=csv',
+  classes:  'https://docs.google.com/spreadsheets/d/e/2PACX-1vQERoyCDImcCdFj1UIxR8nnnL4Iv60k7thVphoPPfu69DZ1tB3G2fP4IB0B705NBAk6pPLXq88ek05I/pub?gid=911519428&single=true&output=csv',
+  leads:    'https://docs.google.com/spreadsheets/d/e/2PACX-1vQERoyCDImcCdFj1UIxR8nnnL4Iv60k7thVphoPPfu69DZ1tB3G2fP4IB0B705NBAk6pPLXq88ek05I/pub?gid=1361382048&single=true&output=csv',
+  revenue:  'https://docs.google.com/spreadsheets/d/e/2PACX-1vQERoyCDImcCdFj1UIxR8nnnL4Iv60k7thVphoPPfu69DZ1tB3G2fP4IB0B705NBAk6pPLXq88ek05I/pub?gid=1671818801&single=true&output=csv',
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Pre-fill inputs with hardcoded URLs
+  Object.entries(HARDCODED_URLS).forEach(([k, v]) => {
+    const el = document.getElementById('url-'+k);
+    if (el) el.value = v;
+    localStorage.setItem(KEYS[k], v);
+  });
+  // Auto-connect immediately — no setup needed
+  document.getElementById('setup-banner').style.display = 'none';
+  document.getElementById('settings-btn').style.display = 'block';
+  fetchAllAndRender(HARDCODED_URLS);
+  setInterval(() => fetchAllAndRender(HARDCODED_URLS), REFRESH_MS);
+});
+
+// ─── FETCH ──────────────────────────────────────────
+async function fetchCSV(url, tabKey) {
+  if (!url) return null;
+  try {
+    const bust = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+    const resp = await fetch(bust);
+    if (!resp.ok) throw new Error('bad response');
+    const text = await resp.text();
+    setTabStatus(tabKey, 'connected');
+    return parseCSV(text);
+  } catch(e) {
+    setTabStatus(tabKey, 'error');
+    return null;
+  }
+}
+
+async function fetchAllAndRender(urls) {
+  const [growth, students, classes, leads, revenue] = await Promise.all([
+    fetchCSV(urls.growth,   'growth'),
+    fetchCSV(urls.students, 'students'),
+    fetchCSV(urls.classes,  'classes'),
+    fetchCSV(urls.leads,    'leads'),
+    fetchCSV(urls.revenue,  'revenue'),
+  ]);
+  // Debug classes
+  if (classes) {
+    console.log('Classes headers:', classes.headers);
+    console.log('Classes first 3 rows:', classes.rows.slice(0,3));
+  } else {
+    console.log('Classes CSV failed to load');
+  }
+
+  if (!growth) {
+    document.getElementById('last-updated').textContent = 'Could not load Growth Tracker — check it is published as CSV';
+    setBadge('offline');
+    renderDashboard(getDemoData());
+    return;
+  }
+
+  const data = buildDashboardData(growth, students, classes, leads, revenue);
+  renderDashboard(data);
+  document.getElementById('last-updated').textContent = 'Last synced: ' + new Date().toLocaleTimeString();
+  setBadge('live');
+}
+
+function setBadge(state) {
+  const el = document.getElementById('live-badge');
+  if (state === 'live')    { el.textContent = 'Live';    el.style.background = 'rgba(107,191,160,0.2)'; el.style.color = '#9FE1CB'; }
+  else if (state === 'demo'){ el.textContent = 'Demo';   el.style.background = 'rgba(201,168,76,0.2)';  el.style.color = '#F0D080'; }
+  else                     { el.textContent = 'Offline'; el.style.background = 'rgba(224,123,138,0.2)'; el.style.color = '#F5C4B3'; }
+}
+
+// ─── CSV PARSER ─────────────────────────────────────
+function parseCSV(csv) {
+  const lines = csv.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return { headers: [], rows: [] };
+
+  // Find the real header row — look for rows with 3+ matching known column names
+  // scan more rows to handle sheets with tall banners/summaries
+  const knownHeaders = ['month','student','parent','class name','class','status','date','type','category','teacher','revenue','expense','lead','seats','enrolled','fill','payroll','source','whatsapp','fee'];
+  let headerIdx = 0;
+  let bestScore = 0;
+  for (let i = 0; i < Math.min(lines.length, 15); i++) {
+    const cells = splitCSVLine(lines[i]).map(c => c.replace(/"/g,'').trim().toLowerCase());
+    const matches = cells.filter(c => knownHeaders.some(k => c === k || c.includes(k)));
+    // Prefer rows with MORE matches — real header rows have many column names
+    if (matches.length > bestScore && matches.length >= 3) {
+      bestScore = matches.length;
+      headerIdx = i;
+    }
+  }
+
+  const headers = splitCSVLine(lines[headerIdx]).map(h => h.replace(/"/g,'').trim());
+  const rows = [];
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const vals = splitCSVLine(lines[i]);
+    const row = {};
+    headers.forEach((h, j) => { row[h] = (vals[j] || '').replace(/"/g,'').trim(); });
+    // Skip hint rows and empty rows
+    const firstVal = Object.values(row)[0] || '';
+    if (firstVal.toLowerCase().includes('e.g') || firstVal.toLowerCase().includes('auto') || firstVal.toLowerCase().includes('select')) continue;
+    if (Object.values(row).some(v => v !== '')) rows.push(row);
+  }
+  return { headers, rows };
+}
+
+function splitCSVLine(line) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+    else { cur += c; }
+  }
+  result.push(cur);
+  return result;
+}
+
+function num(v) {
+  const n = parseFloat((v||'0').replace(/[^0-9.-]/g,''));
+  return isNaN(n) ? 0 : n;
+}
+
+// ─── BUILD DASHBOARD DATA FROM SHEETS ───────────────
+function buildDashboardData(growthCSV, studentsCSV, classesCSV, leadsCSV, revenueCSV) {
+
+  // ── GROWTH ──
+  const growthRows = growthCSV.rows.filter(r => {
+    const m = r['Month'] || r['month'] || '';
+    // Skip totals/summary rows and empty rows
+    if (!m || m.trim() === '') return false;
+    if (m.toLowerCase().includes('total') || m.toLowerCase().includes('avg') || m.toLowerCase().includes('average')) return false;
+    if (m.toLowerCase().includes('year') || m.toLowerCase().includes('yea')) return false;
+    // Must look like a real month entry (contains a month name or number)
+    const monthNames = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec','january','february','march','april','june','july','august','september','october','november','december'];
+    const mLower = m.toLowerCase();
+    return monthNames.some(mn => mLower.includes(mn));
+  }).map(r => ({
+    month:    r['Month']          || r['month']    || '',
+    students: num(r['Total Students']   || r['students'] || 0),
+    revenue:  num(r['Revenue (RM)']     || r['revenue']  || 0),
+    expenses: num(r['Expenses (RM)']    || r['expenses'] || 0),
+    profit:   num(r['Net Profit (RM)']  || r['profit']   || 0),
+    ads:      num(r['Ads Spend (RM)']   || r['ads']      || 0),
+    leads:    num(r['New Leads']        || r['leads']    || 0),
+    trials:   num(r['Trial Conversions']|| r['trials']   || 0),
+  })).filter(r => r.month && r.month.trim() !== '');
+
+  // Filter out empty month rows (no data entered yet)
+  const filledRows = growthRows.filter(r => r.revenue > 0 || r.students > 0 || r.leads > 0);
+  // Replace growthRows with only filled rows
+  growthRows.splice(0, growthRows.length, ...filledRows);
+  const last = growthRows[growthRows.length - 1] || {};
+  const prev = growthRows[growthRows.length - 2] || {};
+  if (growthRows.length) growthRows[growthRows.length - 1].current = true;
+
+  // ── STUDENTS ──
+  let activeStudents = 0, inactiveStudents = 0, trialStudents = 0;
+  let totalFees = 0;
+  if (studentsCSV) {
+    studentsCSV.rows.forEach(r => {
+      const status = (r['Status'] || r['status'] || '').trim();
+      if (status === 'Active')   { activeStudents++; totalFees += num(r['Monthly Fee (RM)'] || r['fee'] || 0); }
+      if (status === 'Inactive') inactiveStudents++;
+      if (status === 'Trial')    trialStudents++;
+    });
+  }
+
+  // ── CLASSES ──
+  let classes = [];
+  let totalFill = 0, classCount = 0;
+  if (classesCSV) {
+    // Group by class name, take most recent month per class
+    const classMap = {};
+    classesCSV.rows.forEach(r => {
+      const name    = r['Class Name'] || r['class'] || r['ClassName'] || '';
+      const max     = num(r['Max Seats'] || r['max'] || 0);
+      const filled  = num(r['Enrolled'] || r['Filled Seats'] || r['enrolled'] || 0);
+      const teacher = r['Teacher'] || '';
+      const month   = r['Month'] || '';
+      const slot    = r['Time Slot'] || r['slot'] || '';
+      if (!name || name.toLowerCase().includes('class name') || name.toLowerCase().includes('select')) return;
+      if (max === 0 && filled === 0) return;
+      // Keep latest month per class
+      if (!classMap[name] || month > classMap[name].month) {
+        classMap[name] = { name, teacher, max, filled, month, slot };
+      }
+    });
+    classes = Object.values(classMap).map(c => {
+      const pct = c.max > 0 ? Math.round((c.filled / c.max) * 100) : 0;
+      totalFill += pct; classCount++;
+      return { ...c, pct };
+    });
+  }
+  const avgFill = classCount > 0 ? Math.round(totalFill / classCount) : num(last.fill || 0);
+
+  // ── LEADS ──
+  let leadsData = [], newLeadsCount = 0, trialAttended = 0, joined = 0;
+  if (leadsCSV) {
+    leadsCSV.rows.forEach(r => {
+      const name   = r['Parent Name'] || r['name'] || '';
+      const status = (r['Status'] || r['status'] || '').trim();
+      const age    = r['Child Age'] || r['age'] || '';
+      const source = r['Lead Source'] || r['source'] || '';
+      const followup = r['Follow-Up Date'] || r['followup'] || '';
+      if (!name) return;
+      if (status === 'New Lead')        newLeadsCount++;
+      if (status === 'Trial Attended')  trialAttended++;
+      if (status === 'Joined')          joined++;
+      leadsData.push({ name, status, sub: (age ? 'Age '+age : '') + (source ? ' · '+source : ''), followup });
+    });
+  }
+  const conversionRate = trialAttended > 0 ? Math.round((joined / trialAttended) * 100) : num(last.trials || 0);
+  const leadsFinal = leadsData.length > 0 ? leadsData : [];
+
+  // ── REVENUE & EXPENSES ──
+  let pl = { tuition: totalFees || last.revenue || 0, reg: 0, trial: 0, total_rev: last.revenue || 0, payroll: 0, ads: last.ads || 0, software: 0, materials: 0, misc: 0, total_exp: last.expenses || 0, profit: last.profit || 0 };
+  if (revenueCSV) {
+    revenueCSV.rows.forEach(r => {
+      const type = (r['Revenue Type'] || r['Expense Category'] || r['type'] || '').toLowerCase();
+      const amt  = num(r['Amount (RM)'] || r['amount'] || 0);
+      if (type.includes('registration') || type.includes('admin')) pl.reg += amt;
+      else if (type.includes('trial'))     pl.trial   += amt;
+      else if (type.includes('tuition') || type.includes('monthly')) pl.tuition = amt > 0 ? amt : pl.tuition;
+      if (type.includes('payroll') || type.includes('teacher'))  pl.payroll   += amt;
+      else if (type.includes('ads') || type.includes('marketing')) pl.ads      += amt;
+      else if (type.includes('software') || type.includes('platform')) pl.software += amt;
+      else if (type.includes('material'))  pl.materials += amt;
+      else if (type.includes('misc'))      pl.misc      += amt;
+    });
+    pl.total_rev = pl.tuition + pl.reg + pl.trial || last.revenue || 0;
+    pl.total_exp = pl.payroll + pl.ads + pl.software + pl.materials + pl.misc || last.expenses || 0;
+    pl.profit    = pl.total_rev - pl.total_exp || last.profit || 0;
+  }
+
+  // ── RETENTION ──
+  const total = activeStudents + inactiveStudents;
+  const retentionRate = total > 0 ? Math.round((activeStudents / total) * 100) : 91;
+
+  // ── FINAL KPIs ──
+  const studentsVal  = activeStudents > 0 ? activeStudents : (last.students || 0);
+  const revenueVal   = pl.total_rev  || last.revenue  || 0;
+  const profitVal    = pl.profit     || last.profit   || 0;
+  const adsVal       = pl.ads        || last.ads      || 0;
+  const leadsVal     = newLeadsCount > 0 ? newLeadsCount : (last.leads || 0);
+
+  return {
+    kpis: {
+      students: studentsVal,    students_prev: prev.students  || 0,
+      revenue:  revenueVal,     revenue_prev:  prev.revenue   || 0,
+      profit:   profitVal,      profit_prev:   prev.profit    || 0,
+      ads:      adsVal,         ads_prev:      prev.ads       || 0,
+      leads:    leadsVal,       leads_prev:    prev.leads     || 0,
+      conversion: conversionRate, conversion_prev: 0,
+      retention:  retentionRate,  retention_prev:  0,
+      fill:       avgFill,        fill_prev:       prev.fill  || 0,
+    },
+    growth: growthRows,
+    classes,
+    leads: leadsFinal,
+    pl,
+  };
+}
+
+// ─── DEMO DATA ──────────────────────────────────────
+function getDemoData() {
+  return {
+    _demo: true,
+    kpis: { students:34,students_prev:31,revenue:9800,revenue_prev:9300,profit:4500,profit_prev:4200,ads:900,ads_prev:750,leads:31,leads_prev:25,conversion:73,conversion_prev:68,retention:91,retention_prev:90,fill:82,fill_prev:79 },
+    classes: [
+      {name:'Kids 4–6 (Sat 9am)',pct:87.5},{name:'Kids 7–9 (Sat 10am)',pct:100},
+      {name:'Beginner (Sun 9am)',pct:60},{name:'Intermediate (Sun)',pct:90},
+      {name:'Teen Class (Sat 11am)',pct:62.5},{name:'Advanced (Wed 7pm)',pct:40},
+      {name:'1-on-1 Slot A',pct:100},
+    ],
+    leads: [
+      {name:'Mrs. Tan Bee Leng',sub:'Age 7 · Facebook Ads',status:'New Lead'},
+      {name:'Mr. Ravi Kumar',sub:'Age 5 · Instagram',status:'Trial Booked'},
+      {name:'Puan Rohana',sub:'Age 9 · Referral',status:'Trial Attended'},
+      {name:'Mrs. Wong Li Shan',sub:'Age 6 · Facebook Ads',status:'Joined'},
+      {name:'Mr. Farid Hassan',sub:'Age 11 · WhatsApp',status:'Follow-Up Needed'},
+    ],
+    growth: [
+      {month:'Jan',students:24,revenue:7200,expenses:4800,profit:2400,ads:600,leads:18},
+      {month:'Feb',students:26,revenue:7800,expenses:5000,profit:2800,ads:700,leads:22},
+      {month:'Mar',students:29,revenue:8700,expenses:5200,profit:3500,ads:800,leads:28},
+      {month:'Apr',students:31,revenue:9300,expenses:5100,profit:4200,ads:750,leads:25},
+      {month:'May',students:34,revenue:9800,expenses:5300,profit:4500,ads:900,leads:31,current:true},
+    ],
+    pl:{tuition:9200,reg:300,trial:300,total_rev:9800,payroll:2700,ads:900,software:255,materials:85,misc:360,total_exp:4300,profit:4500}
+  };
+}
+
+// ─── RENDER ─────────────────────────────────────────
+function renderDashboard(D) {
+  document.getElementById('dashboard').style.display = 'block';
+  setKPI('students',   D.kpis.students,   D.kpis.students_prev,   false, false);
+  setKPI('revenue',    D.kpis.revenue,    D.kpis.revenue_prev,    true,  false);
+  setKPI('profit',     D.kpis.profit,     D.kpis.profit_prev,     true,  false);
+  setKPI('ads',        D.kpis.ads,        D.kpis.ads_prev,        true,  true);
+  setKPI('leads',      D.kpis.leads,      D.kpis.leads_prev,      false, false);
+  setKPI('conversion', D.kpis.conversion, D.kpis.conversion_prev, false, false, '%');
+  setKPI('retention',  D.kpis.retention,  D.kpis.retention_prev,  false, false, '%');
+  setKPI('fill',       D.kpis.fill,       D.kpis.fill_prev,       false, false, '%');
+  renderChart(D.growth);
+  renderCapacity(D.classes);
+  renderLeads(D.leads);
+  renderGrowth(D.growth);
+  renderPL(D.pl);
+}
+
+function setKPI(id, val, prev, isCurrency, invertTrend, suffix='') {
+  const el = document.getElementById('kpi-'+id);
+  const tEl = document.getElementById('kpi-'+id+'-trend');
+  if (!el) return;
+  el.textContent = isCurrency ? 'RM ' + Math.round(val).toLocaleString('en-MY') : Math.round(val) + suffix;
+  if (prev !== undefined && prev !== null) {
+    const diff = val - prev;
+    const isUp = invertTrend ? diff <= 0 : diff >= 0;
+    const cls = isUp ? 'up' : 'down';
+    const arrow = diff >= 0 ? '↑' : '↓';
+    const dispVal = isCurrency ? 'RM '+Math.abs(Math.round(diff)).toLocaleString() : Math.abs(Math.round(diff))+suffix;
+    tEl.innerHTML = '<span class="'+cls+'">'+arrow+' '+(diff>=0?'+':'')+dispVal+'</span> vs last month';
+  }
+}
+
+function renderChart(growth) {
+  if (!growth || !growth.length) return;
+  if (revenueChart) revenueChart.destroy();
+  revenueChart = new Chart(document.getElementById('revenueChart'), {
+    data: {
+      labels: growth.map(g => g.month.substring(0,3)),
+      datasets: [
+        {type:'bar', label:'Revenue', data:growth.map(g=>g.revenue), backgroundColor:'#C8BEDF', borderRadius:6, order:2},
+        {type:'bar', label:'Expenses',data:growth.map(g=>g.expenses),backgroundColor:'#F5C4B3', borderRadius:6, order:2},
+        {type:'line',label:'Profit',  data:growth.map(g=>g.profit),  borderColor:'#6BBFA0', backgroundColor:'rgba(107,191,160,0.08)', tension:0.4, pointRadius:4, pointBackgroundColor:'#6BBFA0', fill:true, order:1}
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:10}}},
+        y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>'RM'+Math.round(v).toLocaleString()}}
+      }
+    }
+  });
+}
+
+function barColor(pct) {
+  if (pct>=90) return {bar:'#4A3F6B',text:'#4A3F6B'};
+  if (pct>=70) return {bar:'#6BBFA0',text:'#0F6E56'};
+  if (pct>=50) return {bar:'#C9A84C',text:'#854F0B'};
+  return {bar:'#E07B8A',text:'#A32D2D'};
+}
+
+function renderCapacity(classes) {
+  const el = document.getElementById('capacity-list');
+  if (!classes || !classes.length) {
+    el.innerHTML = '<div class="empty-state">Connect your Classes tab to see live seat data</div>';
+    return;
+  }
+  el.innerHTML = classes.map(c => {
+    const pct = c.pct || 0; const clr = barColor(pct);
+    return '<div class="cap-row"><div class="cap-name" title="'+c.name+'">'+c.name+'</div><div class="cap-bar-wrap"><div class="cap-bar" style="width:'+Math.min(pct,100)+'%;background:'+clr.bar+'"></div></div><div class="cap-pct" style="color:'+clr.text+'">'+Math.round(pct)+'%</div></div>';
+  }).join('');
+}
+
+const PILL = {'New Lead':'pill-new','Trial Booked':'pill-booked','Trial Attended':'pill-trial','Joined':'pill-joined','Follow-Up Needed':'pill-fu'};
+
+function renderLeads(leads) {
+  const el = document.getElementById('leads-list');
+  if (!leads || !leads.length) {
+    el.innerHTML = '<div class="empty-state">Connect your Leads CRM tab to see your pipeline</div>';
+    return;
+  }
+  el.innerHTML = leads.slice(0,7).map(l =>
+    '<div class="lead-row"><div><div class="lead-name">'+l.name+'</div><div class="lead-sub">'+(l.sub||'')+'</div></div><span class="pill '+(PILL[l.status]||'pill-new')+'">'+l.status+'</span></div>'
+  ).join('');
+}
+
+function renderGrowth(growth) {
+  const el = document.getElementById('growth-table');
+  if (!growth || !growth.length) return;
+  el.innerHTML = growth.slice(-6).map(g =>
+    '<div class="growth-row'+(g.current?' current':'')+'"><span class="growth-mon">'+g.month.substring(0,3)+'</span><span class="growth-stu">'+g.students+' students</span><span class="growth-profit">'+(g.profit>0?'RM '+Math.round(g.profit).toLocaleString():'—')+'</span></div>'
+  ).join('') +
+  '<div class="pl-total" style="margin-top:12px"><span class="pl-total-label">YTD profit</span><span class="pl-total-val">RM '+Math.round(growth.reduce((s,g)=>s+g.profit,0)).toLocaleString()+'</span></div>';
+}
+
+function renderPL(pl) {
+  const el = document.getElementById('pl-summary');
+  const rows = [
+    {label:'Tuition fees',   val:pl.tuition,    color:'var(--t-dark)'},
+    {label:'Registration',   val:pl.reg,         color:'var(--t-dark)'},
+    {label:'Trial fees',     val:pl.trial,       color:'var(--t-dark)'},
+    {label:'Total revenue',  val:pl.total_rev,   color:'#0F6E56',bold:true},
+    {label:'Teacher payroll',val:-pl.payroll,    color:'#A32D2D'},
+    {label:'Ads spend',      val:-pl.ads,        color:'#A32D2D'},
+    {label:'Software',       val:-pl.software,   color:'#A32D2D'},
+    {label:'Materials',      val:-pl.materials,  color:'#A32D2D'},
+    {label:'Misc',           val:-pl.misc,       color:'#A32D2D'},
+    {label:'Total expenses', val:-pl.total_exp,  color:'#A32D2D',bold:true},
+  ];
+  el.innerHTML = rows.filter(r=>r.val!==0).map(r =>
+    '<div class="pl-row"><span class="pl-label" style="'+(r.bold?'font-weight:700;':'')+'">'+r.label+'</span><span class="pl-val" style="color:'+r.color+';">'+(r.val<0?'− RM '+Math.abs(Math.round(r.val)).toLocaleString():'RM '+Math.round(r.val).toLocaleString())+'</span></div>'
+  ).join('') +
+  '<div class="pl-total"><span class="pl-total-label">Net profit</span><span class="pl-total-val" style="color:'+(pl.profit>=0?'var(--p-deep)':'#A32D2D')+'">RM '+Math.round(pl.profit).toLocaleString()+'</span></div>';
+}
+</script>
+</body>
+</html>
